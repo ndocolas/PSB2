@@ -12,13 +12,17 @@ int main()
         printf("Falhou!\n ");
         return 1;
     }
-    mymemory_display(m);
-    void *alloc1 = mymemory_alloc(m, 100);
-    void *alloc2 = mymemory_alloc(m, 200);
-    void *alloc3 = mymemory_alloc(m, 50);
-    mymemory_display(m);
 
-    mymemory_free(m, alloc2);
+    void *alloc1 = mymemory_alloc(m, 1);
+    void *alloc2 = mymemory_alloc(m, 1);
+    void *alloc3 = mymemory_alloc(m, 1);
+    void *alloc4 = mymemory_alloc(m, 10);
+    void *alloc5 = mymemory_alloc(m, 1);
+
+    mymemory_free(m, alloc4);
+
+    void *alloc6 = mymemory_alloc(m, 5);
+
     mymemory_display(m);
     return 0;
 }
