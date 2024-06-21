@@ -5,7 +5,7 @@ int main()
 {
     printf("Iniciando...\n");
     size_t tamanho = 500;
-    mymemroy_t *memory = mymemory_init(tamanho);
+    mymemory_t *memory = mymemory_init(tamanho);
 
     if(memory == NULL)
     {
