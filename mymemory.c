@@ -165,3 +165,26 @@ void mymemory_free(mymemory_t *memory, void *part)
         alloc = alloc->next;
     }
 }
+
+void mymemory_display(mymemory_t *memory)
+{
+    if (memory->head == NULL)
+    {
+        printf("Nenhuma alocação salva\n\n");
+        return;
+    }
+    
+    printf("Alocações atuais:\n");
+    allocation_t *nodo = memory->head;
+    int count = 0;
+
+    while (nodo != NULL)
+    {
+        printf("\nAlocação %d:\n", ++count);
+        printf("  Início: %p\n", nodo->start);
+        printf("  Tamanho: %zu bytes\n", nodo->size);
+        nodo = nodo->next;
+    }
+
+    printf("\nNúmero total de alocações: %d\n\n", count);
+}
