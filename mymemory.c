@@ -3,13 +3,13 @@
 #include <string.h>
 #include <stdio.h>
 
-mymemroy_t *mymemory_init(size_t size)
+mymemory_t *mymemory_init(size_t size)
 {
     /*
     Tenta o alocar espaco na memoria
     Usa malloc para alocar a memoria
     */
-    mymemroy_t *memory = (mymemroy_t *)malloc(sizeof(mymemroy_t));
+    mymemory_t *memory = (mymemory_t *)malloc(sizeof(mymemory_t));
 
     if(memory == NULL) return NULL;//Se a memoria nao tiver sido alocada, retorna null
 
@@ -32,9 +32,12 @@ mymemroy_t *mymemory_init(size_t size)
     return memory;    
 }
 
-void* mymemory_alloc(mymemroy_t *memory, size_t size)
+void* mymemory_alloc(mymemory_t *memory, size_t size)
 {
-    //Corrige o alocar_size incluindo o alocar_size da struct
+    /*Corrige o alocar_size incluindo o alocar_size da struct
+    Por conta dos ponteros e dos outros atributos contidos na struct 'allocation'
+    faz-se esta correcao para adicionar todas as informacoes do nodo
+    */
     size_t alocar_size = size + sizeof(allocation_t);
 
     //variaveis para iterar sobre a lista
@@ -47,17 +50,16 @@ void* mymemory_alloc(mymemroy_t *memory, size_t size)
         //verifica a diferenca entre os espacos para ver se tem disponibilidade para inserir
         if (((char *) atual->start - (char *)atual_memoria) > alocar_size) break;
         /*
-        caso o if retorne true, ou seja, caso o espaco na memoria entre as alocacoes
-        seja maior do que o alocar_size que se quer alocar, entao quebra o while e pula alocacao
+        caso o espaco entre as alocacoes seja maior do que o tamanho
+        que se quer alocar, entao quebra o while e vai alocacao
     
         caso o espaco entre as alocacoes nao seja maior, entao altera os valores do iterador para passar
         para o proximo espaco
-        
-        adiciona o valor da alocacao para pular para o fim dela, recebendo o valor do inicio da proxima alocacao
-        que é o fim desta
         */
+
+        //adiciona o valor da alocacao para pular para o fim dela, recebendo o valor do inicio da proxima alocacao
+        //que é o fim desta
         atual_memoria = (char *)atual->start + atual->size;
-        
         //preserva a alocacao atual para a proxima comparacao
         prev = atual;
         //incrementa para a proxima atual
@@ -69,11 +71,17 @@ void* mymemory_alloc(mymemroy_t *memory, size_t size)
     e nao tenha encontrado nenhum espaco disponivel, verifica caso o fim tenha espaco disponivel
     caso nao tenha retorna null
     */
-    if((char *) memory->pool + memory->total_size - (char *)atual_memoria < alocar_size)
-    {
-        printf("Nao há espaço para alocar.\n");
-        return NULL;//retorna nulo caso nao tenha espaco no fim
-    }
+    if(( (char *)atual_memoria - ( (char *) memory->pool + memory->total_size ) ) < alocar_size) return NULL;
+    /*      retorna o lugar         _           retorna o fim da fila        |\   caso menor
+           atual da iteracao                                                 |/  retorna null
+      
+         |---------------------*------|
+                                ------  ==> tamanho até o fim
+                                ----    ==> quanto quer iserir
+
+                                é menor entao da para inserir. se fosse maior nao retornaria null
+
+    */
 
     //define os valores da nova alocacao
     allocation_t *nodo = (allocation_t *)((char *)atual_memoria);
@@ -83,9 +91,77 @@ void* mymemory_alloc(mymemroy_t *memory, size_t size)
     nodo->next = atual;
 
     //apos definir os valores da alocacao inicia a insercao na lista
-    if(prev == NULL) memory->head = nodo; //caso nao tenha anterior, ou seja, caso for a primeira insercao define como head
-    else prev->next = nodo; //caso nao seja, insere no final do ponto de iteracao
+
+    //caso nao tenha anterior, ou seja, caso for a primeira insercao define como o head
+    if(prev == NULL) memory->head = nodo; 
+    else prev->next = nodo; //caso nao seja, insere no final do ponto da iteracao
 
     //retorna o ponteiro do inicio da novo nodo alocado
     return nodo->start;
+}
+
+void mymemory_free(mymemory_t *memory, void *part)
+{
+    if(part == NULL) return; //caso o valor recebido seja nulo, encerra o free
+
+    //cria os atributos para iterar
+    allocation_t *alloc = memory->head;
+    allocation_t *prev = NULL;
+
+    //inicia o iterador para tentar achar a parte enviada no parametro
+    while(part != NULL)
+    {
+        if(alloc->start == part)//caso encontre o alloc do parametro
+        {
+            if(prev == NULL)
+            {
+                /*
+                caso o prev seja null, o que significa que o nodo que quer remover é a head
+                a head passa a apontar para o segundo nodo da lista, tornando-o o primeiro
+                e removendo o desejado
+
+                antes:          
+                             ___________
+                             |         |
+                INICIO    REMOVER   SEGUNDO 
+                  |          |
+                  ------------
+
+                depois:
+
+                INICIO    REMOVER   SEGUNDO 
+                  |                    |
+                  ----------------------
+                
+                neste caso representei o INICIO como 'memory->head'
+                */
+                memory->head = alloc->next;
+            }
+            else
+            {
+                /*
+                caso o prev nao seja null, significa que o nodo que se deseja remover é um nodo do meio
+                basta apontar o NEXT do nodo anterior para o next do nodo que se deseja remover, tirando-o da lista
+
+                antes:
+                           ___________
+                           |         |
+                PREV    REMOVER     NEXT
+                 |         |
+                 -----------
+
+                 depois:
+                
+                PREV    REMOVER     NEXT
+                 |                   |
+                 ---------------------
+                */
+                prev->next = alloc->next;
+            }
+            break;
+        }
+        //pula para a proxima iteracao, (significa que alloc->start != part)
+        prev = alloc;
+        alloc = alloc->next;
+    }
 }
