@@ -181,8 +181,10 @@ void mymemory_display(mymemory_t *memory)
     while (nodo != NULL)
     {
         printf("\nAlocação %d:\n", ++count);
-        printf("  Início: %p\n", nodo->start);
-        printf("  Tamanho: %zu bytes\n", nodo->size);
+        
+        //recebe o valor dos ultimos 3 bits do endereco e transforma de hexadecimal para inteiro
+        printf("  Início: %03lu\n", ((unsigned long)nodo->start)%1000);
+        printf("  Tamanho: %zu bytes\n", sizeof(allocation_t) + nodo->size);
         nodo = nodo->next;
     }
 
