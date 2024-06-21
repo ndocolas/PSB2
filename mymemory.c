@@ -26,15 +26,15 @@ mymemory_t *mymemory_init(size_t size)
 
     //caso tenha alocado corretaente o pool
     memory->total_size = size; //define o alocar_size do pool
-    memory->head = NULL; //define o inicio da lista como nulo pois nada deve ter sido alocado ate entao
+    memory->head = NULL; //define o inicio da lista como nulo pois a lista inicia vazia
 
-    //alocou tudo com exito e retorna o ponteiro para o programa
+    //alocou tudo com exito e retorna o ponteiro da lista para o programa
     return memory;    
 }
 
 void* mymemory_alloc(mymemory_t *memory, size_t size)
 {
-    /*Corrige o alocar_size incluindo o alocar_size da struct
+    /*Corrige o alocar_size incluindo os valores da struct
     Por conta dos ponteros e dos outros atributos contidos na struct 'allocation'
     faz-se esta correcao para adicionar todas as informacoes do nodo
     */
@@ -50,15 +50,21 @@ void* mymemory_alloc(mymemory_t *memory, size_t size)
         //verifica a diferenca entre os espacos para ver se tem disponibilidade para inserir
         if (((char *) atual->start - (char *)atual_memoria) > alocar_size) break;
         /*
-        caso o espaco entre as alocacoes seja maior do que o tamanho
-        que se quer alocar, entao quebra o while e vai alocacao
+        1 - atual
+        2 - atual_memoria                
+
+        INICIO |------------1---------2------| FIM
+                             |-----|           =====> quanto quer inserir
+                
+                Visualmente demonstrando, percebe-se que é possivel inserir. Caso isso ocorra,
+                o if é valido e quebra o while seguindo para a alocação
     
         caso o espaco entre as alocacoes nao seja maior, entao altera os valores do iterador para passar
         para o proximo espaco
-        */
+        
 
-        //adiciona o valor da alocacao para pular para o fim dela, recebendo o valor do inicio da proxima alocacao
-        //que é o fim desta
+        adiciona o valor da alocacao para pular para o fim dela, recebendo o valor do inicio da proxima alocacao
+        que é o fim desta */
         atual_memoria = (char *)atual->start + atual->size;
         //preserva a alocacao atual para a proxima comparacao
         prev = atual;
@@ -116,7 +122,8 @@ void mymemory_free(mymemory_t *memory, void *part)
             if(prev == NULL)
             {
                 /*
-                caso o prev seja NULL, o que significa que o nodo que quer remover é a head
+                caso o prev seja NULL, o que significa que o nodo que quer remover é a head.
+
                 a head passa a apontar para o segundo nodo da lista, tornando-o o primeiro
                 e removendo o desejado
 
@@ -140,8 +147,9 @@ void mymemory_free(mymemory_t *memory, void *part)
             else
             {
                 /*
-                caso o prev nao seja NULL, significa que o nodo que se deseja remover é um nodo do meio
-                basta apontar o NEXT do nodo anterior para o next do nodo que se deseja remover, tirando-o da lista
+                caso o prev nao seja NULL, significa que o nodo que se deseja remover é um nodo do meio.
+
+                basta apontar o NEXT do nodo anterior para o next do nodo que se deseja excluir, removendo-o da lista
 
                 antes:
                            ___________
@@ -150,7 +158,7 @@ void mymemory_free(mymemory_t *memory, void *part)
                  |         |
                  -----------
 
-                 depois:
+                depois:
                 
                 PREV    REMOVER     NEXT
                  |                   |
@@ -184,7 +192,9 @@ void mymemory_display(mymemory_t *memory)
 
         //recebe o valor dos ultimos 3 bits do endereco e transforma de hexadecimal para inteiro
         printf("  Início: %03lu\n", ((unsigned long)nodo->start)%1000);
-        printf("  Tamanho: %zu bytes\n", sizeof(allocation_t) + nodo->size);
+        printf("  Tamanho: %zu\n", nodo->size);
+        printf("  Tamanho total: %zu (contando outros atributos da struct)\n", sizeof(allocation_t) + nodo->size);
+
         nodo = nodo->next;
     }
 
@@ -199,4 +209,30 @@ void mymemory_cleanup(mymemory_t *memory)
     memory->total_size = 0;
 
     free(memory);
+}
+
+void mymemory_stats(mymemory_t *memory)
+{
+    size_t total_alocacoes = 0; 
+    size_t total_memoria_alocada = 0;
+    size_t total_memoria_disponivel = memory->total_size;
+    size_t maior_espaco_livre = 0;
+    size_t fragmentos_memoria_livre = 0;
+
+    allocation_t *nodo = memory->head;
+    void *atual_memoria = memory->pool;
+
+    //caso nao tenha nenhum nodo a memoria inteira esta livre, logo o maior bloco livre
+    //é o proprio tamanho alocado da memoria
+    if(nodo == NULL) maior_espaco_livre = memory->total_size;
+
+    while(nodo!=NULL)
+    {
+        total_alocacoes++;
+        total_memoria_alocada += nodo->size + sizeof(allocation_t);
+
+        size_t espaco_livre = (size_t)(char *)alocacao->start - (char *)
+
+    }
+
 }
