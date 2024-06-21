@@ -11,7 +11,7 @@ mymemory_t *mymemory_init(size_t size)
     */
     mymemory_t *memory = (mymemory_t *)malloc(sizeof(mymemory_t));
 
-    if(memory == NULL) return NULL;//Se a memoria nao tiver sido alocada, retorna null
+    if(memory == NULL) return NULL;//Se a memoria nao tiver sido alocada, retorna NULL
 
     /*
     Caso a memoria tiver sido devidaemnte aloca
@@ -69,17 +69,17 @@ void* mymemory_alloc(mymemory_t *memory, size_t size)
     /*
     ao sair do while, verifica overflow. caso a iteracao tenha ido ate o fim
     e nao tenha encontrado nenhum espaco disponivel, verifica caso o fim tenha espaco disponivel
-    caso nao tenha retorna null
+    caso nao tenha retorna NULL
     */
     if(( (char *)atual_memoria - ( (char *) memory->pool + memory->total_size ) ) < alocar_size) return NULL;
     /*      retorna o lugar         _           retorna o fim da fila        |\   caso menor
-           atual da iteracao                                                 |/  retorna null
+           atual da iteracao                                                 |/  retorna NULL
       
          |---------------------*------|
                                 ------  ==> tamanho até o fim
                                 ----    ==> quanto quer iserir
 
-                                é menor entao da para inserir. se fosse maior nao retornaria null
+                                é menor entao da para inserir. se fosse maior nao retornaria NULL
 
     */
 
@@ -116,7 +116,7 @@ void mymemory_free(mymemory_t *memory, void *part)
             if(prev == NULL)
             {
                 /*
-                caso o prev seja null, o que significa que o nodo que quer remover é a head
+                caso o prev seja NULL, o que significa que o nodo que quer remover é a head
                 a head passa a apontar para o segundo nodo da lista, tornando-o o primeiro
                 e removendo o desejado
 
@@ -140,7 +140,7 @@ void mymemory_free(mymemory_t *memory, void *part)
             else
             {
                 /*
-                caso o prev nao seja null, significa que o nodo que se deseja remover é um nodo do meio
+                caso o prev nao seja NULL, significa que o nodo que se deseja remover é um nodo do meio
                 basta apontar o NEXT do nodo anterior para o next do nodo que se deseja remover, tirando-o da lista
 
                 antes:
@@ -181,7 +181,7 @@ void mymemory_display(mymemory_t *memory)
     while (nodo != NULL)
     {
         printf("\nAlocação %d:\n", ++count);
-        
+
         //recebe o valor dos ultimos 3 bits do endereco e transforma de hexadecimal para inteiro
         printf("  Início: %03lu\n", ((unsigned long)nodo->start)%1000);
         printf("  Tamanho: %zu bytes\n", sizeof(allocation_t) + nodo->size);
@@ -189,4 +189,14 @@ void mymemory_display(mymemory_t *memory)
     }
 
     printf("\nNúmero total de alocações: %d\n\n", count);
+}
+
+void mymemory_cleanup(mymemory_t *memory)
+{
+    free(memory->pool);
+    memory->pool = NULL;
+    memory->head = NULL;
+    memory->total_size = 0;
+
+    free(memory);
 }
