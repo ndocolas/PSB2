@@ -3,8 +3,7 @@
 
 int main()
 {
-    printf("Iniciando...\n");
-    size_t tamanho = 500;
+    size_t tamanho = 100;
     mymemory_t *m = mymemory_init(tamanho);
 
     if(m == NULL)
@@ -13,16 +12,17 @@ int main()
         return 1;
     }
 
-    void *alloc1 = mymemory_alloc(m, 1);
-    void *alloc2 = mymemory_alloc(m, 1);
-    void *alloc3 = mymemory_alloc(m, 1);
-    void *alloc4 = mymemory_alloc(m, 10);
-    void *alloc5 = mymemory_alloc(m, 1);
+    void *alloc1 = mymemory_alloc(m, 5);
+    void *alloc2 = mymemory_alloc(m, 5);
+    void *alloc3 = mymemory_alloc(m, 5);
+    mymemory_stats(m);
 
-    mymemory_free(m, alloc4);
+    mymemory_free(m, alloc1);
+    printf("\n\n\n--==--=--=-=Depois-==-=-=-=-==-\n\n\n");
+    void *alloc4 = mymemory_alloc(m, 2);
+    printf("\n");
+    mymemory_stats(m);
 
-    void *alloc6 = mymemory_alloc(m, 5);
-
-    mymemory_display(m);
+    mymemory_cleanup(m);
     return 0;
 }
