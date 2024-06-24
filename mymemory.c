@@ -14,7 +14,7 @@ mymemory_t *mymemory_init(size_t size)
     if(memory == NULL) return NULL;//Se a memoria nao tiver sido alocada, retorna NULL
 
     /*
-    Caso a memoria tiver sido devidaemnte aloca
+    Caso a memoria tiver sido devidaemnte alocada
     aloca o pool de memoria usando o malloc
     */
     memory->pool = malloc(size);
@@ -45,10 +45,11 @@ void* mymemory_alloc(mymemory_t *memory, size_t size)
     allocation_t *prev = NULL;
 
     void *atual_memoria = memory->pool;
-    while (atual != NULL ) //inicia a iteracao da lista
+    while (atual != NULL) //inicia a iteracao da lista
     {
         //verifica a diferenca entre os espacos para ver se tem disponibilidade para inserir
-        if (((char *) atual->start - (char *)atual_memoria) > alocar_size) break;
+        if (((char *) atual->start - (char *)atual_memoria) >= alocar_size) break;
+        
         /*
         1 - atual
         2 - atual_memoria                
@@ -63,10 +64,10 @@ void* mymemory_alloc(mymemory_t *memory, size_t size)
         para o proximo espaco
         
 
-        adiciona o valor da alocacao para pular para o fim dela, recebendo o valor do inicio da proxima alocacao
+        adiciona o valor da nodo para pular para o fim dela, recebendo o valor do inicio da proxima nodo
         que é o fim desta */
         atual_memoria = (char *)atual->start + atual->size;
-        //preserva a alocacao atual para a proxima comparacao
+        //preserva a nodo atual para a proxima comparacao
         prev = atual;
         //incrementa para a proxima atual
         atual = atual->next;
@@ -88,21 +89,20 @@ void* mymemory_alloc(mymemory_t *memory, size_t size)
                                 é menor entao da para inserir. se fosse maior nao retornaria NULL
 
     */
-
-    //define os valores da nova alocacao
+    //define os valores da nova nodo
     allocation_t *nodo = (allocation_t *)((char *)atual_memoria);
 
     nodo->start = (char *)atual_memoria + sizeof(allocation_t);
     nodo->size = size;
     nodo->next = atual;
-
-    //apos definir os valores da alocacao inicia a insercao na lista
+    //apos definir os valores da nodo inicia a insercao na lista
 
     //caso nao tenha anterior, ou seja, caso for a primeira insercao define como o head
     if(prev == NULL) memory->head = nodo; 
     else prev->next = nodo; //caso nao seja, insere no final do ponto da iteracao
 
     //retorna o ponteiro do inicio da novo nodo alocado
+    printf("Memoria de tamanho %zu alocada com sucesso\n", size + sizeof(allocation_t));
     return nodo->start;
 }
 
@@ -211,28 +211,62 @@ void mymemory_cleanup(mymemory_t *memory)
     free(memory);
 }
 
-void mymemory_stats(mymemory_t *memory)
+void mymemory_stats(mymemory_t *memory)//meu
 {
-    size_t total_alocacoes = 0; 
-    size_t total_memoria_alocada = 0;
-    size_t total_memoria_disponivel = memory->total_size;
-    size_t maior_espaco_livre = 0;
-    size_t fragmentos_memoria_livre = 0;
+    size_t qtd_alocacoes = 0,
+    memoria_alocada = 0,
+    memoria_disponivel = memory->total_size, 
+    maior_fragmento = 0,
+    fragmentos = 0;
 
     allocation_t *nodo = memory->head;
     void *atual_memoria = memory->pool;
 
     //caso nao tenha nenhum nodo a memoria inteira esta livre, logo o maior bloco livre
     //é o proprio tamanho alocado da memoria
-    if(nodo == NULL) maior_espaco_livre = memory->total_size;
+    if(nodo == NULL) maior_fragmento = memory->total_size;
 
-    while(nodo!=NULL)
+    while(nodo != NULL)
     {
-        total_alocacoes++;
-        total_memoria_alocada += nodo->size + sizeof(allocation_t);
+        qtd_alocacoes++;//acrescenta 1 para o numero de allocations
+        memoria_alocada += nodo->size + sizeof(allocation_t);//acrescenta o tamanho da allocation para o tamanho total
 
-        size_t espaco_livre = (size_t)(char *)alocacao->start - (char *)
+        //verifica se ha espaco entre os nodos, no caso de um free ter acontecido 
+        //e nenhuma nodo ter preenchido o espaco
+        size_t memoria_livre = (size_t) ((char *)nodo->start - (char *)atual_memoria - sizeof(allocation_t));
+        if(memoria_livre > 0)
+        {
+            //caso haja espaco livre acrescenta para o numero de fragmentos
+            fragmentos++;
+            //verifica se o fragmento atual é maior que o maior até agora lido
+            //caso for altera
+            if(memoria_livre > maior_fragmento) maior_fragmento = memoria_livre;
+        }
+        //retorna caso haja
+        printf("Espaco livre antes do bloco %u: %u bytes\n", (unsigned) qtd_alocacoes, (unsigned) memoria_livre);
 
+        //altera os valores para a proxima iteracao
+        atual_memoria = (char*) nodo + sizeof(allocation_t) + nodo->size;
+        nodo = nodo->next;
     }
 
+    size_t memoria_final = (size_t)((char *)memory->pool + memory->total_size - (char *)atual_memoria);
+    
+    if(memoria_final > 0)
+    {
+        //acrescenta para o numero de fragmentos
+        fragmentos++;
+        //verifica se o final é o maior fragmento
+        if(memoria_final > maior_fragmento) maior_fragmento = memoria_final;
+        printf("Espaco livre no fim da pool: %u\n", (unsigned)memoria_final);
+    }
+
+    memoria_disponivel -= memoria_alocada;
+
+    printf("\nStatus da memoria:\n");
+    printf("Numero de alocacoes: %u\n", (unsigned)qtd_alocacoes);
+    printf("Memoria alocada: %u\n", (unsigned)memoria_alocada);
+    printf("Memoria livre: %u\n",(unsigned)memoria_disponivel);
+    printf("Maior fragmento: %u\n", (unsigned)maior_fragmento);
+    printf("Quantidade de fragmentos: %u\n", (unsigned)fragmentos);
 }
