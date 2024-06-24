@@ -20,12 +20,9 @@ typedef struct
 mymemory_t* mymemory_init(size_t size);
 
 void* mymemory_alloc(mymemory_t *memory, size_t size);
-void mymemory_free(mymemory_t *memory, void *prt);
+void mymemory_free(mymemory_t *memory, void *part);
 void mymemory_display(mymemory_t *memory);
 void mymemory_cleanup(mymemory_t *memory);
 void mymemory_stats(mymemory_t *memory);
-
-
-
 
 #endif
