@@ -3,14 +3,14 @@
 
 #include <stddef.h>
 
-typedef struct allocation
+typedef struct allocation //nodo
 {
     void *start; //ponteiro para o inicio da alocacao
     size_t size; //tamanho da alocacao
     struct allocation *next; //ponteiro para a proxima alocacao. caso null, nao tem proximo
 } allocation_t; 
 
-typedef struct 
+typedef struct //lista
 {
     void *pool; //ponteiro para o bloco de memoria real
     size_t total_size; //tamanho total da lista

@@ -78,7 +78,7 @@ void* mymemory_alloc(mymemory_t *memory, size_t size)
     e nao tenha encontrado nenhum espaco disponivel, verifica caso o fim tenha espaco disponivel
     caso nao tenha retorna NULL
     */
-    if(((char *)atual_memoria - ( (char *) memory->pool + memory->total_size ) ) < alocar_size) {printf("Nao alocou\n\n"); return NULL;}
+    if(((char *)atual_memoria - ( (char *) memory->pool + memory->total_size ) ) < alocar_size) {printf("Overflow\n\n"); return NULL;}
     /*      retorna o lugar         _           retorna o fim da memoria     |\   caso menor
            atual da iteracao                                                 |/  retorna NULL
       
@@ -169,6 +169,16 @@ void mymemory_free(mymemory_t *memory, void *part)
     }
 }
 
+void mymemory_cleanup(mymemory_t *memory)
+{
+    free(memory->pool);
+    memory->pool = NULL;
+    memory->head = NULL;
+    memory->total_size = 0;
+
+    free(memory);
+}
+
 void mymemory_display(mymemory_t *memory)
 {
     if (memory->head == NULL)
@@ -194,16 +204,6 @@ void mymemory_display(mymemory_t *memory)
     }
 
     printf("\nNúmero total de alocações: %d\n\n", count);
-}
-
-void mymemory_cleanup(mymemory_t *memory)
-{
-    free(memory->pool);
-    memory->pool = NULL;
-    memory->head = NULL;
-    memory->total_size = 0;
-
-    free(memory);
 }
 
 void mymemory_stats(mymemory_t *memory)//meu
