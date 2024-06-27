@@ -78,8 +78,8 @@ void* mymemory_alloc(mymemory_t *memory, size_t size)
     e nao tenha encontrado nenhum espaco disponivel, verifica caso o fim tenha espaco disponivel
     caso nao tenha retorna NULL
     */
-    if(( (char *)atual_memoria - ( (char *) memory->pool + memory->total_size ) ) < alocar_size) return NULL;
-    /*      retorna o lugar         _           retorna o fim da fila        |\   caso menor
+    if(((char *)atual_memoria - ( (char *) memory->pool + memory->total_size ) ) < alocar_size) {printf("Nao alocou\n\n"); return NULL;}
+    /*      retorna o lugar         _           retorna o fim da memoria     |\   caso menor
            atual da iteracao                                                 |/  retorna NULL
       
          |---------------------*------|
@@ -119,8 +119,7 @@ void mymemory_free(mymemory_t *memory, void *part)
     {
         if(alloc->start == part)//caso encontre o alloc do parametro
         {
-            if(prev == NULL)
-            {
+            if(prev == NULL) memory->head = alloc->next;
                 /*
                 caso o prev seja NULL, o que significa que o nodo que quer remover é a head.
 
@@ -142,10 +141,8 @@ void mymemory_free(mymemory_t *memory, void *part)
                 
                 neste caso representei o INICIO como 'memory->head'
                 */
-                memory->head = alloc->next;
-            }
-            else
-            {
+            
+            else prev->next = alloc->next;
                 /*
                 caso o prev nao seja NULL, significa que o nodo que se deseja remover é um nodo do meio.
 
@@ -164,8 +161,6 @@ void mymemory_free(mymemory_t *memory, void *part)
                  |                   |
                  ---------------------
                 */
-                prev->next = alloc->next;
-            }
             break;
         }
         //pula para a proxima iteracao, (significa que alloc->start != part)
