@@ -1,12 +1,18 @@
 CC=gcc
 CFLAGS=-Wall #ativa todos os warnigs
 
-all: clear exe
+all: clear exe clean
 
-exe:
+exe: 
 	$(CC) -o exe main.c mymemory.c
 
-clear:
+clear: 
 	rm -f *.o exe
 
-.PHONY: all clear
+clean:
+	clear
+
+run:
+	./exe
+
+.PHONY: all clear clean
